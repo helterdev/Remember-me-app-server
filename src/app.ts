@@ -4,6 +4,9 @@ import cors from 'cors';
 import authRouter from './routes/auth.routes';
 import cookieParser from 'cookie-parser';
 import taskRouter from './routes/task.routes';
+import dotenv from 'dotenv';
+dotenv.config();
+// console.log(process.env.PORT);
 
 const app: express.Application = express();
 app.use(

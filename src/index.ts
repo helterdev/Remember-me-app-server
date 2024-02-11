@@ -1,6 +1,9 @@
 import app from './app';
 import { connectDB } from './db/db';
+
+const port = process.env.PORT;
+
 connectDB();
-app.listen(8080, () => {
-  console.log('Server running on http://localhost:8080');
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
 });
