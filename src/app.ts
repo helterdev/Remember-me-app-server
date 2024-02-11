@@ -15,6 +15,7 @@ app.use(
     origin: 'http://localhost:3000',
   })
 );
+app.options('/api', cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
