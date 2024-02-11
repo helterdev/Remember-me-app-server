@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { TaskModel } from '../db/models/task.model';
+
 export const getTasks = async (req: Request, res: Response) => {
   const tasks = await TaskModel.find({
     user: req.user.id,

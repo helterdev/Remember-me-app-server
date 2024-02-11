@@ -20,5 +20,5 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/api', authRouter);
-app.use('/api', taskRouter);
+app.use('/api/auth', taskRouter);
 export default app;
