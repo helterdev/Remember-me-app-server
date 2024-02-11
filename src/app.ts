@@ -16,6 +16,7 @@ app.use(
   })
 );
 app.options('/api', cors());
+app.options('/api/auth', cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
