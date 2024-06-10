@@ -1,18 +1,20 @@
-import { Request, Response } from 'express';
-import { UserModel } from '../db/models/user.model';
-import bycrypt from 'bcryptjs';
-import { createAccessToken } from '../libs/jwt';
+import { Request, Response } from "express";
+import { UserModel } from "../db/models/user.model";
+import bycrypt from "bcryptjs";
+import { createAccessToken } from "../libs/jwt";
+import accessenv from "../config";
 
 export const register = async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
     if (!username || !email || !password) {
       return res.status(400).send({
-        message: 'Falta un campo',
+        message: "Falta un campo",
       });
     }
 
     //encryptamos la password
+    //segundo parametro es el salt
     const passwordHash = await bycrypt.hash(password, 10);
     const newUser = new UserModel({
       username,
@@ -23,9 +25,9 @@ export const register = async (req: Request, res: Response) => {
     //creas el token despues de que el usuario sea creado
     const token = await createAccessToken({ id: createUser._id });
     //lo estableces en una cookie
-    res.cookie('token', token);
+    res.cookie("token", token);
     return res.status(200).send({
-      message: 'Usuario registrado',
+      message: "Usuario registrado",
       user: {
         id: createUser._id,
         username: createUser.username,
@@ -46,22 +48,32 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).send({
-        message: 'Falta un parametro',
+        message: "Falta un parametro",
       });
     }
     const userFind = await UserModel.findOne({ email });
     if (!userFind) {
-      return res.status(400).send('Usuario no registrado');
+      return res.status(400).send("Usuario no registrado");
     }
 
     const isMatch = await bycrypt.compare(password, userFind.password);
     if (!isMatch) {
-      return res.status(400).send('Invalid Password');
+      return res.status(400).send("Invalid Password");
     }
 
     //creacion del token
     const token = await createAccessToken({ id: userFind.id });
-    res.cookie('token', token);
+    res.cookie("token", token, {
+      httpOnly: accessenv.COOKIE_HTTP_ONLY === "true",
+      secure: accessenv.COOKIE_SECURE === "true",
+      domain: accessenv.COOKIE_DOMAIN,
+      sameSite: accessenv.COOKIE_SAME_SITE as
+        | boolean
+        | "lax"
+        | "strict"
+        | "none",
+      maxAge: 3600000,
+    });
     return res.send({
       id: userFind.id,
       username: userFind.username,
@@ -75,7 +87,7 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const logout = async (req: Request, res: Response) => {
-  res.cookie('token', '', {
+  res.cookie("token", "", {
     expires: new Date(0),
   });
 
@@ -87,7 +99,7 @@ export const profile = async (req: Request, res: Response) => {
   const userFound = await UserModel.findById(id);
   if (!userFound) {
     return res.status(400).send({
-      message: 'User not found',
+      message: "User not found",
     });
   }
 

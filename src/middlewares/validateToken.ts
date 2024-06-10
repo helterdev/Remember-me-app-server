@@ -1,11 +1,11 @@
-import { NextFunction, Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import { SECRET_TOKEN } from '../config';
+import { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import acessenv from "../config";
 
-declare global{
+declare global {
   namespace Express {
     interface Request {
-      user: {id: string, iat: number, exp: number}
+      user: { id: string; iat: number; exp: number };
     }
   }
 }
@@ -16,20 +16,20 @@ export const authRequired = (
   next: NextFunction
 ) => {
   const { token } = req.cookies;
-  
+
   if (!token) {
     return res.status(401).send({
-      message: 'Not token, authorization denied',
+      message: "Not token, authorization denied",
     });
   }
-  jwt.verify(token, SECRET_TOKEN, (err: any, user: any) => {
+  jwt.verify(token, acessenv.JWT_SECRET, (err: any, user: any) => {
     if (err) {
       return res.status(403).send({
-        message: 'Invalid Token',
+        message: "Invalid Token",
       });
     }
-    // console.log(user);
-    
+    console.log(user);
+
     req.user = user;
     next();
   });

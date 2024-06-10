@@ -16,15 +16,17 @@ exports.profile = exports.logout = exports.login = exports.register = void 0;
 const user_model_1 = require("../db/models/user.model");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jwt_1 = require("../libs/jwt");
+const config_1 = __importDefault(require("../config"));
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { username, email, password } = req.body;
         if (!username || !email || !password) {
             return res.status(400).send({
-                message: 'Falta un campo',
+                message: "Falta un campo",
             });
         }
         //encryptamos la password
+        //segundo parametro es el salt
         const passwordHash = yield bcryptjs_1.default.hash(password, 10);
         const newUser = new user_model_1.UserModel({
             username,
@@ -35,9 +37,9 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         //creas el token despues de que el usuario sea creado
         const token = yield (0, jwt_1.createAccessToken)({ id: createUser._id });
         //lo estableces en una cookie
-        res.cookie('token', token);
+        res.cookie("token", token);
         return res.status(200).send({
-            message: 'Usuario registrado',
+            message: "Usuario registrado",
             user: {
                 id: createUser._id,
                 username: createUser.username,
@@ -59,20 +61,26 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { email, password } = req.body;
         if (!email || !password) {
             return res.status(400).send({
-                message: 'Falta un parametro',
+                message: "Falta un parametro",
             });
         }
         const userFind = yield user_model_1.UserModel.findOne({ email });
         if (!userFind) {
-            return res.status(400).send('Usuario no registrado');
+            return res.status(400).send("Usuario no registrado");
         }
         const isMatch = yield bcryptjs_1.default.compare(password, userFind.password);
         if (!isMatch) {
-            return res.status(400).send('Invalid Password');
+            return res.status(400).send("Invalid Password");
         }
         //creacion del token
         const token = yield (0, jwt_1.createAccessToken)({ id: userFind.id });
-        res.cookie('token', token);
+        res.cookie("token", token, {
+            httpOnly: config_1.default.COOKIE_HTTP_ONLY === "true",
+            secure: config_1.default.COOKIE_SECURE === "true",
+            domain: config_1.default.COOKIE_DOMAIN,
+            sameSite: config_1.default.COOKIE_SAME_SITE,
+            maxAge: 3600000,
+        });
         return res.send({
             id: userFind.id,
             username: userFind.username,
@@ -87,7 +95,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.login = login;
 const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.cookie('token', '', {
+    res.cookie("token", "", {
         expires: new Date(0),
     });
     return res.sendStatus(200);
@@ -98,7 +106,7 @@ const profile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userFound = yield user_model_1.UserModel.findById(id);
     if (!userFound) {
         return res.status(400).send({
-            message: 'User not found',
+            message: "User not found",
         });
     }
     return res.send({
