@@ -80,9 +80,8 @@ export const login = async (req: Request, res: Response) => {
       email: userFind.email,
     });
   } catch (error) {
-    return res.status(500).send({
-      message: error,
-    });
+    console.log("Error in login: ", error);
+    return res.status(500);
   }
 };
 

@@ -88,9 +88,8 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
     }
     catch (error) {
-        return res.status(500).send({
-            message: error,
-        });
+        console.log("Error in login: ", error);
+        return res.status(500);
     }
 });
 exports.login = login;
